@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println("prog1 version: ", version.Version)
+	fmt.Println("sbsecrets version: ", version.Version)
 }

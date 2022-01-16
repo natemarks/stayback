@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println("prog2 version: ", version.Version)
+	fmt.Println("sbkp version: ", version.Version)
 }
