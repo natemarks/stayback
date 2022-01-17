@@ -1,6 +1,9 @@
 package config
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func Test_validateDir(t *testing.T) {
 	type args struct {
@@ -46,6 +49,43 @@ func Test_validateDir(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("validateDir() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_sortUnique(t *testing.T) {
+	type args struct {
+		iList []string
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantOList []string
+		wantErr   bool
+	}{
+		{
+			name: "valid",
+			args: args{
+				iList: []string{
+					".ssh", "/opt/cisco", ".aws",
+				},
+			},
+			wantErr: false,
+			wantOList: []string{
+				"/Users/nmarks/.aws", "/Users/nmarks/.ssh", "/opt/cisco",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotOList, err := sortUnique(tt.args.iList)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sortUnique() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotOList, tt.wantOList) {
+				t.Errorf("sortUnique() gotOList = %v, want %v", gotOList, tt.wantOList)
 			}
 		})
 	}

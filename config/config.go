@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sort"
 )
 
 // Config describes the data backup up to the s3 bucket
@@ -64,7 +65,30 @@ func validateDir(iDir string) (string, error) {
 	return iDir, err
 }
 
+// sortUnique converts each directory entry to a validated absolute
+// then it sorts the list and removes the duplicates
 func sortUnique(iList []string) (oList []string, err error) {
+	var absList []string
+
+	for _, v := range iList {
+		abs, err := validateDir(v)
+		if err != nil {
+			return []string{}, err
+		}
+		absList = append(absList, abs)
+	}
+
+	sort.Strings(absList)
+
+	for i, v := range absList {
+		if i == 0 {
+			oList = append(oList, v)
+		} else {
+			if v != absList[i-1] {
+				oList = append(oList, v)
+			}
+		}
+	}
 
 	return oList, err
 }
