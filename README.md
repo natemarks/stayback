@@ -1,4 +1,7 @@
 # stayback
+MOTHBALLED - use duplicity
+I liked this project for  some testability learning and more time spent with cobra.  check out the last commits for the best parts
+
 
 stayback is a command line tool used for storing/retrieving sensitive linux desktop data in various AWS services.
 
