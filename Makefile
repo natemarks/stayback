@@ -78,6 +78,8 @@ gocyclo: # run cyclomatic complexity check
 
 static: goimports fmt vet lint gocyclo test
 
+shellcheck: ## execute shellcheck
+	   find scripts -type f -name "*.sh" -exec "shellcheck" "--format=gcc" {} \;
 clean:
 	-@rm ${OUT} ${OUT}-v*
 

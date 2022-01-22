@@ -1,6 +1,5 @@
 package main
 
-// TODO: have working directories be per job id
 import (
 	"fmt"
 	"github.com/natemarks/stayback/version"

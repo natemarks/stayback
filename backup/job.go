@@ -15,8 +15,8 @@ type Job struct {
 	HomeDirectory   string   `json:"homeDirectory"`   // assumed root for relative backup target paths
 	BackupDirectory string   `json:"backupDirectory"` // local backup location with a .tmp working ssub-dir
 	S3Bucket        string   `json:"s3Bucket"`        // backup s3 bucket
-	EncryptedDirs   []string `json:"encryptedDirs"`
-	UnEncryptedDirs []string `json:"unEncryptedDirs"`
+	EncryptedDirs   []string `json:"encryptedDirs"`   // list of abs or relative dirs to back up wit encryption
+	UnEncryptedDirs []string `json:"unEncryptedDirs"` // list of absolute or relative dirs to back up without encryption
 }
 
 // Report returns a config report as a list of strings. This makes it a little easier to target parts of the report for testing.
@@ -43,7 +43,8 @@ func checkDirsExist(dirs []string) (result map[string]bool) {
 
 }
 
-// TargetDirsExist returns testable output
+// TargetDirsExist Returns a merge map of the absolute directories and the boolean result of their existence
+// We want to check every directory and report all problems, so they can all be solved at once
 func (c Job) TargetDirsExist() map[string]bool {
 	encryptedDirs := checkDirsExist(c.EncryptedDirs)
 	unencryptedDirs := checkDirsExist(c.UnEncryptedDirs)
@@ -79,13 +80,17 @@ func NewJobFromFile(fPath string) (result Job, err error) {
 	return result, err
 }
 
-// prependRoot given a root and a target, if the target does not begin with '/', prepend the root
-// otherwise, just return the target
-func prependRoot(root, target string) string {
-	if target[0:1] == "/" {
-		return target
+// makeAbsolute if the give dri doesn't begin with a path separator, join it onto the default root
+func makeAbsolute(dir, defaultRoot string) string {
+	var first rune
+	for _, c := range dir {
+		first = c
+		break
 	}
-	return path.Join(root, target)
+	if first == os.PathSeparator {
+		return dir
+	}
+	return path.Join(defaultRoot, dir)
 }
 
 // cleanTargets converts each directory entry to an absolute path using a default root for relative directories
@@ -95,7 +100,7 @@ func cleanTargets(tList []string, defaultRoot string) (oList []string, err error
 
 	// go through the targets and ensure each is an absolute path
 	for _, v := range tList {
-		abs := prependRoot(defaultRoot, v)
+		abs := makeAbsolute(v, defaultRoot)
 		absList = append(absList, abs)
 	}
 
