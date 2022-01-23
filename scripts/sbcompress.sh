@@ -88,7 +88,7 @@ compress_dir() {
   ABSPATH=$(realpath "${1}")
   TAR_FILE=$(echo "${ABSPATH}" | base64).tar.gz
   msg "${GREEN}backing up ${ABSPATH} to ${destination}/${TAR_FILE}${NOFORMAT}"
-  tar -czvf "${SBTMP}/${TAR_FILE}" "${ABSPATH}"
+  tar -cpzvf "${SBTMP}/${TAR_FILE}" "${ABSPATH}"
   rm -f "${destination}/${TAR_FILE}"
   mv "${SBTMP}/${TAR_FILE}" "${destination}"
   msg "${GREEN}SUCCESS: ${ABSPATH} -> ${destination}/${TAR_FILE}${NOFORMAT}"
