@@ -97,7 +97,7 @@ compress_dir() {
 check_dirs() {
   for i in "${args[@]}"
   do
-    ls "${i}"
+    ls "${i}" > /dev/null
   done
 }
 
