@@ -209,6 +209,7 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 		input.Logger.Debug().Err(err).Msgf("encrypting %s -> %s", tempTarball, tempTarball+".asc")
 		_, err = shell.RunAndWait("gpg", []string{
 			"--openpgp",
+			"--armor",
 			"--batch",
 			"--yes",
 			"--encrypt",
