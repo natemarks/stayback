@@ -195,7 +195,7 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 
 	// copy new tarball from job to local
 	input.Logger.Debug().Msgf("copying new tarball %s -> %s", tempTarball, localTarball)
-	_, err = shell.RunAndWait("cp ", []string{tempTarball, localTarball})
+	_, err = shell.RunAndWait("cp", []string{tempTarball, localTarball})
 	if err != nil {
 		input.Logger.Error().Err(err).Msgf("failed to copy new tarball %s -> %s", tempTarball, localTarball)
 		return err
