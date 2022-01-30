@@ -5,10 +5,12 @@
 package backup
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/natemarks/awsgrips/s3"
+	"github.com/natemarks/stayback/shell"
 	"github.com/rs/zerolog"
 	"io/ioutil"
 	"os"
@@ -69,9 +71,9 @@ func (c Job) TargetDirsExist(log *zerolog.Logger) (err error) {
 // CreateS3JobPath creates the s3 destination path
 // log fatal if this fails
 func (c Job) CreateS3JobPath(log *zerolog.Logger) (err error) {
-	path := fmt.Sprintf("stayback/%s/", c.Id)
-	uri := fmt.Sprintf("s3://%s/%s", c.S3Bucket, path)
-	err = s3.CreatePath(c.S3Bucket, path)
+	s3path := fmt.Sprintf("stayback/%s/", c.Id)
+	uri := fmt.Sprintf("s3://%s/%s", c.S3Bucket, s3path)
+	err = s3.CreatePath(c.S3Bucket, s3path)
 	if err != nil {
 		log.Error().Err(err).Msgf("Failed to create s3 path: %s", uri)
 	}
@@ -149,12 +151,13 @@ func cleanTargets(tList []string, defaultRoot string) (oList []string) {
 
 // TargetHandlerInput is the input required to backup a single target
 type TargetHandlerInput struct {
-	Target    string `json:"target"`    // Target path to be backed up
-	Encrypt   bool   `json:"encrypt"`   // Encrypt the target before uploading to s3
-	Id        string `json:"id"`        // Id job identifier
-	Local     string `json:"Local"`     // Local job backup destination
-	Recipient string `json:"recipient"` // Recipient email identifies GPG public key for encryption
-	S3Bucket  string `json:"s3Bucket"`  // backup s3 bucket
+	Target    string          // Target path to be backed up
+	Encrypt   bool            // Encrypt the target before uploading to s3
+	Id        string          // Id job identifier
+	Local     string          // Local job backup destination
+	Recipient string          // Recipient email identifies GPG public key for encryption
+	S3Bucket  string          // backup s3 bucket
+	Logger    *zerolog.Logger // logger pointer
 }
 
 // TargetHandler a local target path
@@ -165,5 +168,68 @@ type TargetHandlerInput struct {
 // each exceution should have a unique logging context so we known which backup props are generating  a given log
 // message
 func TargetHandler(input TargetHandlerInput) (err error) {
+	// the absolute path of the target is converted ot base64 and that's used for the tarball base file name
+	// /home/myhome/.ssh  -> L2hvbWUvbXlob21lLy5zc2gK
+	jobDir := path.Join(input.Target, input.Id)
+	baseFileName := base64.StdEncoding.EncodeToString([]byte(input.Target))
+	tempTarball := path.Join(jobDir, input.Id, baseFileName+".tar.gz")
+	localTarball := path.Join(input.Local, baseFileName+".tar.gz")
+
+	// compress the target to the a file in the job dir
+	input.Logger.Debug().Msgf("compressing %s -> %s", input.Target, tempTarball)
+	_, err = shell.RunAndWait("tar", []string{"-cpzvf", tempTarball, input.Target})
+	if err != nil {
+		input.Logger.Error().Err(err).Msgf("failed: compressing %s -> %s", input.Target, tempTarball)
+		return err
+	}
+	input.Logger.Debug().Err(err).Msgf("success: compressing %s -> %s", input.Target, tempTarball)
+
+	// delete pre-existing tarball in local directory
+	input.Logger.Debug().Msgf("deleting old local backup:  %s", localTarball)
+	_, err = shell.RunAndWait("rm ", []string{"-f", localTarball})
+	if err != nil {
+		input.Logger.Error().Err(err).Msgf("failed to delete old tarball: %s", localTarball)
+		return err
+	}
+	input.Logger.Debug().Err(err).Msgf("deleted old tarball: %s", localTarball)
+
+	// copy new tarball from job to local
+	input.Logger.Debug().Msgf("copying new tarball %s -> %s", tempTarball, localTarball)
+	_, err = shell.RunAndWait("cp ", []string{tempTarball, localTarball})
+	if err != nil {
+		input.Logger.Error().Err(err).Msgf("failed to copy new tarball %s -> %s", tempTarball, localTarball)
+		return err
+	}
+	input.Logger.Debug().Err(err).Msgf("copied new tarball %s -> %s", tempTarball, localTarball)
+
+	// gpg --openpgp --batch --yes --output \
+	//  "${1}.gpg" --encrypt --recipient "${recipient}" "${1}"
+	if input.Encrypt {
+		// encrypt job/tarball -> job/tarball.asc
+		input.Logger.Debug().Err(err).Msgf("encrypting %s -> %s", tempTarball, tempTarball+".asc")
+		_, err = shell.RunAndWait("gpg", []string{
+			"--openpgp",
+			"--batch",
+			"--yes",
+			"--encrypt",
+			"--recipient",
+			input.Recipient,
+			tempTarball,
+		})
+		if err != nil {
+			input.Logger.Error().Err(err).Msgf("failed: encrypting %s -> %s", tempTarball, tempTarball+".asc")
+			return err
+		}
+		// delete the unencrypted tarball from the job directory
+		input.Logger.Debug().Msgf("deleting unencrypted temp tarball:  %s", tempTarball)
+		_, err = shell.RunAndWait("rm ", []string{"-f", tempTarball})
+		if err != nil {
+			input.Logger.Error().Err(err).Msgf("failed to delete unencrypted temp tarball: %s", localTarball)
+			return err
+		}
+		input.Logger.Debug().Err(err).Msgf("deleted unencrypted temp tarball: %s", localTarball)
+
+	}
+
 	return err
 }
