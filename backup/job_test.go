@@ -14,7 +14,6 @@ func Test_cleanTargets(t *testing.T) {
 		name      string
 		args      args
 		wantOList []string
-		wantErr   bool
 	}{
 		// give a list that's already absolute and sorted with no duplicates
 		{
@@ -26,7 +25,6 @@ func Test_cleanTargets(t *testing.T) {
 				},
 				defaultRoot: "/aaa/bbb/ccc",
 			},
-			wantErr: false,
 			wantOList: []string{
 				"/aa/my/dir/.hidden",
 				"/zz/my/dir/.hidden",
@@ -41,7 +39,6 @@ func Test_cleanTargets(t *testing.T) {
 				},
 				defaultRoot: "/aaa/bbb/ccc",
 			},
-			wantErr: false,
 			wantOList: []string{
 				"/aa/my/dir/.hidden",
 				"/zz/my/dir/.hidden",
@@ -58,7 +55,6 @@ func Test_cleanTargets(t *testing.T) {
 				},
 				defaultRoot: "/aaa/bbb/ccc",
 			},
-			wantErr: false,
 			wantOList: []string{
 				"/aa/my/dir/.hidden",
 				"/aaa/bbb/ccc/00/zz/my/dir/.hidden",
@@ -78,7 +74,6 @@ func Test_cleanTargets(t *testing.T) {
 				},
 				defaultRoot: "/aaa/bbb/ccc",
 			},
-			wantErr: false,
 			wantOList: []string{
 				"/aa/my/dir/.hidden",
 				"/aaa/bbb/ccc/00/zz/my/dir/.hidden",
@@ -88,11 +83,7 @@ func Test_cleanTargets(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotOList, err := cleanTargets(tt.args.tList, tt.args.defaultRoot)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("cleanTargets() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			gotOList := cleanTargets(tt.args.tList, tt.args.defaultRoot)
 			if !reflect.DeepEqual(gotOList, tt.wantOList) {
 				t.Errorf("cleanTargets() gotOList = %v, want %v", gotOList, tt.wantOList)
 			}

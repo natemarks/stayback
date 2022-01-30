@@ -39,6 +39,11 @@ type Job struct {
 // We want to check every directory and report all problems, so they can all be solved at once
 // log fatal if this fails
 func (c Job) TargetDirsExist(log *zerolog.Logger) (err error) {
+	// the target lists might be a mix of absolute paths and paths relative to the home directory
+	// clean all the path strings into strings that look like absolutes
+	c.EncryptedDirs = cleanTargets(c.EncryptedDirs, c.HomeDirectory)
+	c.UnEncryptedDirs = cleanTargets(c.UnEncryptedDirs, c.HomeDirectory)
+
 	for _, v := range c.UnEncryptedDirs {
 		_, fErr := os.Stat(v)
 		if fErr != nil {
@@ -107,7 +112,7 @@ func makeAbsolute(dir, defaultRoot string) string {
 
 // cleanTargets converts each directory entry to an absolute path using a default root for relative directories
 // then it sorts the list and removes the duplicates
-func cleanTargets(tList []string, defaultRoot string) (oList []string, err error) {
+func cleanTargets(tList []string, defaultRoot string) (oList []string) {
 	var absList []string
 
 	// go through the targets and ensure each is an absolute path
@@ -132,7 +137,7 @@ func cleanTargets(tList []string, defaultRoot string) (oList []string, err error
 		}
 	}
 
-	return oList, err
+	return oList
 }
 
 // TargetHandlerInput is the input required to backup a single target
