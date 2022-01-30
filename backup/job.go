@@ -41,7 +41,7 @@ type Job struct {
 // TargetDirsExist Returns a merge map of the absolute directories and the boolean result of their existence
 // We want to check every directory and report all problems, so they can all be solved at once
 // log fatal if this fails
-func (c Job) TargetDirsExist(log *zerolog.Logger) (err error) {
+func (c *Job) TargetDirsExist(log *zerolog.Logger) (err error) {
 	// the target lists might be a mix of absolute paths and paths relative to the home directory
 	// clean all the path strings into strings that look like absolutes
 	c.EncryptedDirs = cleanTargets(c.EncryptedDirs, c.HomeDirectory)
@@ -170,7 +170,7 @@ type TargetHandlerInput struct {
 func TargetHandler(input TargetHandlerInput) (err error) {
 	// the absolute path of the target is converted ot base64 and that's used for the tarball base file name
 	// /home/myhome/.ssh  -> L2hvbWUvbXlob21lLy5zc2gK
-	jobDir := path.Join(input.Target, input.Id)
+	jobDir := path.Join(input.Local, input.Id)
 	baseFileName := base64.StdEncoding.EncodeToString([]byte(input.Target))
 	tempTarball := path.Join(jobDir, input.Id, baseFileName+".tar.gz")
 	localTarball := path.Join(input.Local, baseFileName+".tar.gz")
