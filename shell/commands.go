@@ -15,3 +15,10 @@ func RunAndWait(cmdRoot string, cmdOpts []string) (result RunAndWaitOutput, err 
 	result.ExitCode = cmd.ProcessState.ExitCode()
 	return result, err
 }
+
+// MkdirP run mkdir -p for a given path
+func MkdirP(dirPath string) (err error) {
+	args := []string{"-p", dirPath}
+	_, err = RunAndWait("mkdir", args)
+	return err
+}

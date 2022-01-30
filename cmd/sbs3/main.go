@@ -6,9 +6,11 @@ package main
 import (
 	"fmt"
 	"github.com/natemarks/stayback/backup"
+	"github.com/natemarks/stayback/shell"
 	"github.com/natemarks/stayback/version"
 	"github.com/rs/zerolog"
 	"os"
+	"path"
 	"time"
 )
 
@@ -38,6 +40,9 @@ func run() (err error) {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}
+
+	// create the temporary job directory
+	err = shell.MkdirP(path.Join(job.BackupDirectory, job.Id))
 	for _, v := range job.EncryptedDirs {
 		t := backup.TargetHandlerInput{
 			Target:    v,
