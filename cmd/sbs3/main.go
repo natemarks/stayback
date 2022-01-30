@@ -13,14 +13,9 @@ import (
 func run() (err error) {
 	logger := zerolog.New(os.Stderr).With().Str("version", version.Version).Timestamp().Logger()
 	logger.Debug().Msgf("Starting")
-	job := backup.Job{
-		Source:          "",
-		Id:              "",
-		HomeDirectory:   "",
-		BackupDirectory: "",
-		S3Bucket:        "",
-		EncryptedDirs:   nil,
-		UnEncryptedDirs: nil,
+	job, err := backup.NewJobFromFile("/Users/nmarks/.stayback.json")
+	if err != nil {
+		logger.Fatal().Err(err).Msg("")
 	}
 	// log error for all of the targets that don't exist
 	// if any targets didn't exist, log fatal

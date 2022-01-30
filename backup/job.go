@@ -7,12 +7,21 @@ package backup
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/rs/zerolog"
 	"io/ioutil"
 	"os"
 	"path"
 	"sort"
+	"time"
 )
+
+func CurrentTime() string {
+	t := time.Now()
+	return fmt.Sprintf("%d%02d%02d-%02d%02d%02d",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
+}
 
 // Job is the backup job definition
 type Job struct {
