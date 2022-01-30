@@ -44,14 +44,18 @@ func (c Job) TargetDirsExist(log *zerolog.Logger) (err error) {
 		if fErr != nil {
 			err = errors.New("some target paths do not exist")
 			log.Error().Msgf("target does not exist: %s", v)
+			continue
 		}
+		log.Debug().Msgf("target exists: %s", v)
 	}
 	for _, v := range c.EncryptedDirs {
 		_, fErr := os.Stat(v)
 		if fErr != nil {
 			err = errors.New("some target paths do not exist")
 			log.Error().Msgf("target does not exist: %s", v)
+			continue
 		}
+		log.Debug().Msgf("target exists: %s", v)
 	}
 	return err
 }
