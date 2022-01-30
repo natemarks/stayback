@@ -4,10 +4,12 @@ package main
 
 // TODO: have working directories be per job id
 import (
+	"fmt"
 	"github.com/natemarks/stayback/backup"
 	"github.com/natemarks/stayback/version"
 	"github.com/rs/zerolog"
 	"os"
+	"time"
 )
 
 func run() (err error) {
@@ -17,6 +19,13 @@ func run() (err error) {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}
+
+	// set the job id form the current time
+	t := time.Now()
+	job.Id = fmt.Sprintf("%d%02d%02d-%02d%02d%02d",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
+
 	// log error for all of the targets that don't exist
 	// if any targets didn't exist, log fatal
 	err = job.TargetDirsExist(&logger)
