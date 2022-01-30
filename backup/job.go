@@ -172,7 +172,7 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 	// /home/myhome/.ssh  -> L2hvbWUvbXlob21lLy5zc2gK
 	jobDir := path.Join(input.Local, input.Id)
 	baseFileName := base64.StdEncoding.EncodeToString([]byte(input.Target))
-	tempTarball := path.Join(jobDir, input.Id, baseFileName+".tar.gz")
+	tempTarball := path.Join(jobDir, baseFileName+".tar.gz")
 	localTarball := path.Join(input.Local, baseFileName+".tar.gz")
 
 	// compress the target to the a file in the job dir
