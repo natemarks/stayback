@@ -88,10 +88,10 @@ setup_colors
 
 
 
-# script logic here
+# --openppg is required. If I don't use it, files encrypted on mac won't be decrypted on linux
 encrypt_file() {
   msg "${GREEN}encrypting:  ${1}${NOFORMAT}"
-  gpg --batch --yes --output \
+  gpg --openpgp --batch --yes --output \
   "${1}.gpg" --encrypt --recipient "${recipient}" "${1}"
   msg "${GREEN}SUCCESS: encrypted ${1}${NOFORMAT}"
 }

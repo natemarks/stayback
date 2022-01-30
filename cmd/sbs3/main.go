@@ -1,8 +1,10 @@
+// backup local targets to s3 in parallel
+// fail fast for missing local targets and for bad s3 access
 package main
 
 // TODO: have working directories be per job id
 import (
-	"fmt"
+	"github.com/natemarks/stayback/backup"
 	"github.com/natemarks/stayback/version"
 	"github.com/rs/zerolog"
 	"os"
@@ -11,16 +13,55 @@ import (
 func run() (err error) {
 	logger := zerolog.New(os.Stderr).With().Str("version", version.Version).Timestamp().Logger()
 	logger.Debug().Msgf("Starting")
-
-	// validate target paths.  don't want to have to rerun a long job if we don't have to
-	fmt.Println("Print job summary")
-	fmt.Println("Press 'c' to continue")
-	// backup to  tmp working directory
-	// if all the targets are successful, copy the files from tmp to local backup. the names are base64 encodes of the absolute path of  the target directory, so it should only overwrite after a complete success (not a per job success)
-	//and only keep the latest backup of each target.
-	//  additionally, the whole working directory will be synced to the s3 backup path in a folder named for the job identifier
-
-	fmt.Println("backup comp")
+	job := backup.Job{
+		Source:          "",
+		Id:              "",
+		HomeDirectory:   "",
+		BackupDirectory: "",
+		S3Bucket:        "",
+		EncryptedDirs:   nil,
+		UnEncryptedDirs: nil,
+	}
+	// log error for all of the targets that don't exist
+	// if any targets didn't exist, log fatal
+	err = job.TargetDirsExist(&logger)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("")
+	}
+	// log fatal if we fail to create the S3 job path
+	// this is a pretty good access check
+	err = job.CreateS3JobPath()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("")
+	}
+	for _, v := range job.EncryptedDirs {
+		t := backup.TargetHandlerInput{
+			Target:    v,
+			Encrypt:   true,
+			Id:        job.Id,
+			Local:     job.BackupDirectory,
+			Recipient: job.Recipient,
+			S3Bucket:  job.S3Bucket,
+		}
+		err = backup.TargetHandler(t)
+		if err != nil {
+			return err
+		}
+	}
+	for _, v := range job.UnEncryptedDirs {
+		t := backup.TargetHandlerInput{
+			Target:    v,
+			Encrypt:   false,
+			Id:        job.Id,
+			Local:     job.BackupDirectory,
+			Recipient: job.Recipient,
+			S3Bucket:  job.S3Bucket,
+		}
+		err = backup.TargetHandler(t)
+		if err != nil {
+			return err
+		}
+	}
 	return err
 }
 

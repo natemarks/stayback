@@ -1,7 +1,13 @@
+// backup provides the functions for backing up local paths
+// The work is organized as a single job with tasks for each local target path
+// The important job input is validated first so we can fail quickly
+// than the  target handler is run for each target
 package backup
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/rs/zerolog"
 	"io/ioutil"
 	"os"
 	"path"
@@ -12,6 +18,7 @@ import (
 type Job struct {
 	Source          string   `json:"source"`          // ex. file, url, telepathy
 	Id              string   `json:"id"`              // ex. 20220103-080910
+	Recipient       string   `json:"recipient"`       // Recipient email identifies GPG public key for encryption
 	HomeDirectory   string   `json:"homeDirectory"`   // assumed root for relative backup target paths
 	BackupDirectory string   `json:"backupDirectory"` // local backup location with a .tmp working ssub-dir
 	S3Bucket        string   `json:"s3Bucket"`        // backup s3 bucket
@@ -19,43 +26,35 @@ type Job struct {
 	UnEncryptedDirs []string `json:"unEncryptedDirs"` // list of absolute or relative dirs to back up without encryption
 }
 
-// Report returns a config report as a list of strings. This makes it a little easier to target parts of the report for testing.
-// It can be used to describe the job at run time and give the user a chance to cancel
-// report[0] is a string that describes the source of the job definition (ex. $HOME/.stayback/default.json)
-func (c Job) Report() (report []string, err error) {
-
-	return report, err
-}
-
-// checkDirsExist given a list of directories, return a string/bool map to indicate whether each exists
-// and is in fact a directory
-func checkDirsExist(dirs []string) (result map[string]bool) {
-	result = make(map[string]bool)
-	for _, v := range dirs {
-		fi, err := os.Stat(v)
-		if err != nil {
-			result[v] = false
-			continue
-		}
-		result[v] = fi.IsDir()
-	}
-	return result
-
-}
-
 // TargetDirsExist Returns a merge map of the absolute directories and the boolean result of their existence
 // We want to check every directory and report all problems, so they can all be solved at once
-func (c Job) TargetDirsExist() map[string]bool {
-	encryptedDirs := checkDirsExist(c.EncryptedDirs)
-	unencryptedDirs := checkDirsExist(c.UnEncryptedDirs)
-	// merge the maps and return
-	for k, v := range encryptedDirs {
-		unencryptedDirs[k] = v
+// log fatal if this fails
+func (c Job) TargetDirsExist(log *zerolog.Logger) (err error) {
+	for _, v := range c.UnEncryptedDirs {
+		_, fErr := os.Stat(v)
+		if fErr != nil {
+			err = errors.New("some target paths do not exist")
+			log.Error().Msgf("target does not exist: %s", v)
+		}
 	}
-	return unencryptedDirs
+	for _, v := range c.EncryptedDirs {
+		_, fErr := os.Stat(v)
+		if fErr != nil {
+			err = errors.New("some target paths do not exist")
+			log.Error().Msgf("target does not exist: %s", v)
+		}
+	}
+	return err
 }
 
-// Execute returns testable output
+// CreateS3JobPath creates the s3 destination path
+// log fatal if this fails
+func (c Job) CreateS3JobPath() (err error) {
+
+	return err
+}
+
+// Execute iterates the targets and runs the backups
 func (c Job) Execute() (err error) {
 
 	return err
@@ -121,4 +120,25 @@ func cleanTargets(tList []string, defaultRoot string) (oList []string, err error
 	}
 
 	return oList, err
+}
+
+// TargetHandlerInput is the input required to backup a single target
+type TargetHandlerInput struct {
+	Target    string `json:"target"`    // Target path to be backed up
+	Encrypt   bool   `json:"encrypt"`   // Encrypt the target before uploading to s3
+	Id        string `json:"id"`        // Id job identifier
+	Local     string `json:"Local"`     // Local job backup destination
+	Recipient string `json:"recipient"` // Recipient email identifies GPG public key for encryption
+	S3Bucket  string `json:"s3Bucket"`  // backup s3 bucket
+}
+
+// TargetHandler a local target path
+//- backup the target to a tarball in job directory.
+//- encrypt the tarball in the job directory to *.tar.gz.asc (output should be ascii-armor and with --openpgp option)
+//- overwrite-move the unencrypted tarball to the destination directory
+//- upload the encrypted file to the 3 destination then delete the encrypted file
+// each exceution should have a unique logging context so we known which backup props are generating  a given log
+// message
+func TargetHandler(input TargetHandlerInput) (err error) {
+	return err
 }

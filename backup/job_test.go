@@ -5,34 +5,6 @@ import (
 	"testing"
 )
 
-// Test_checkDirsExist make sure the checkDirsExist returns a map correctly
-func Test_checkDirsExist(t *testing.T) {
-	realDir := t.TempDir()
-	type args struct {
-		dirs []string
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantResult map[string]bool
-	}{
-		{
-			name: "valid",
-			args: args{dirs: []string{"/aa/bb/cc", realDir}},
-			wantResult: map[string]bool{
-				"/aa/bb/cc": false,
-				realDir:     true,
-			}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if gotResult := checkDirsExist(tt.args.dirs); !reflect.DeepEqual(gotResult, tt.wantResult) {
-				t.Errorf("checkDirsExist() = %v, want %v", gotResult, tt.wantResult)
-			}
-		})
-	}
-}
-
 func Test_cleanTargets(t *testing.T) {
 	type args struct {
 		tList       []string

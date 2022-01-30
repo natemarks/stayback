@@ -23,3 +23,13 @@ The encrypyted files can be decrypted using the private key:
 ```shell
 gpg --output file.txt --decrypt file.txt.gpg
 ```
+
+## Example
+This is how I use it to backup and encrypt sensitive data 
+```shell
+# compress my aws and sssh config directories to ~/.stayback
+bash scripts/sbcompress.sh ~/.ssh ~/.aws
+# encrypt the new tarballs and append '.asc' extension
+# NOTE: these are ascii-armor files
+bash scripts/sbencrypt.sh $(find ~/.stayback/ -type f -name "*.tar.gz")
+```
