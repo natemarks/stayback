@@ -68,9 +68,14 @@ func (c Job) TargetDirsExist(log *zerolog.Logger) (err error) {
 
 // CreateS3JobPath creates the s3 destination path
 // log fatal if this fails
-func (c Job) CreateS3JobPath() (err error) {
+func (c Job) CreateS3JobPath(log *zerolog.Logger) (err error) {
 	path := fmt.Sprintf("stayback/%s/", c.Id)
-	s3.CreatePath(c.S3Bucket, path)
+	uri := fmt.Sprintf("s3://%s/%s", c.S3Bucket, path)
+	err = s3.CreatePath(c.S3Bucket, path)
+	if err != nil {
+		log.Error().Err(err).Msgf("Failed to create s3 path: %s", uri)
+	}
+	log.Debug().Msgf("Created s3 path: %s", uri)
 	return err
 }
 

@@ -34,7 +34,7 @@ func run() (err error) {
 	}
 	// log fatal if we fail to create the S3 job path
 	// this is a pretty good access check
-	err = job.CreateS3JobPath()
+	err = job.CreateS3JobPath(&logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}
