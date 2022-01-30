@@ -46,6 +46,7 @@ func run() (err error) {
 			Local:     job.BackupDirectory,
 			Recipient: job.Recipient,
 			S3Bucket:  job.S3Bucket,
+			Logger:    &logger,
 		}
 		err = backup.TargetHandler(t)
 		if err != nil {
@@ -60,6 +61,7 @@ func run() (err error) {
 			Local:     job.BackupDirectory,
 			Recipient: job.Recipient,
 			S3Bucket:  job.S3Bucket,
+			Logger:    &logger,
 		}
 		err = backup.TargetHandler(t)
 		if err != nil {
