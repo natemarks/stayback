@@ -186,7 +186,7 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 
 	// delete pre-existing tarball in local directory
 	input.Logger.Debug().Msgf("deleting old local backup:  %s", localTarball)
-	_, err = shell.RunAndWait("rm ", []string{"-f", localTarball})
+	_, err = shell.RunAndWait("rm", []string{"-f", localTarball})
 	if err != nil {
 		input.Logger.Error().Err(err).Msgf("failed to delete old tarball: %s", localTarball)
 		return err
@@ -222,7 +222,7 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 		}
 		// delete the unencrypted tarball from the job directory
 		input.Logger.Debug().Msgf("deleting unencrypted temp tarball:  %s", tempTarball)
-		_, err = shell.RunAndWait("rm ", []string{"-f", tempTarball})
+		_, err = shell.RunAndWait("rm", []string{"-f", tempTarball})
 		if err != nil {
 			input.Logger.Error().Err(err).Msgf("failed to delete unencrypted temp tarball: %s", localTarball)
 			return err
