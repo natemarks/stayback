@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/natemarks/awsgrips/s3"
 	"github.com/rs/zerolog"
 	"io/ioutil"
 	"os"
@@ -68,7 +69,8 @@ func (c Job) TargetDirsExist(log *zerolog.Logger) (err error) {
 // CreateS3JobPath creates the s3 destination path
 // log fatal if this fails
 func (c Job) CreateS3JobPath() (err error) {
-
+	path := fmt.Sprintf("stayback/%s/", c.Id)
+	s3.CreatePath(c.S3Bucket, path)
 	return err
 }
 
