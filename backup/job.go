@@ -182,7 +182,7 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 		input.Logger.Error().Err(err).Msgf("failed: compressing %s -> %s", input.Target, tempTarball)
 		return err
 	}
-	input.Logger.Debug().Err(err).Msgf("success: compressing %s -> %s", input.Target, tempTarball)
+	input.Logger.Debug().Msgf("success: compressing %s -> %s", input.Target, tempTarball)
 
 	// delete pre-existing tarball in local directory
 	input.Logger.Debug().Msgf("deleting old local backup:  %s", localTarball)
@@ -191,7 +191,7 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 		input.Logger.Error().Err(err).Msgf("failed to delete old tarball: %s", localTarball)
 		return err
 	}
-	input.Logger.Debug().Err(err).Msgf("deleted old tarball: %s", localTarball)
+	input.Logger.Debug().Msgf("deleted old tarball: %s", localTarball)
 
 	// copy new tarball from job to local
 	input.Logger.Debug().Msgf("copying new tarball %s -> %s", tempTarball, localTarball)
@@ -200,13 +200,13 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 		input.Logger.Error().Err(err).Msgf("failed to copy new tarball %s -> %s", tempTarball, localTarball)
 		return err
 	}
-	input.Logger.Debug().Err(err).Msgf("copied new tarball %s -> %s", tempTarball, localTarball)
+	input.Logger.Debug().Msgf("copied new tarball %s -> %s", tempTarball, localTarball)
 
 	// gpg --openpgp --batch --yes --output \
 	//  "${1}.gpg" --encrypt --recipient "${recipient}" "${1}"
 	if input.Encrypt {
 		// encrypt job/tarball -> job/tarball.asc
-		input.Logger.Debug().Err(err).Msgf("encrypting %s -> %s", tempTarball, tempTarball+".asc")
+		input.Logger.Debug().Msgf("encrypting %s -> %s", tempTarball, tempTarball+".asc")
 		_, err = shell.RunAndWait("gpg", []string{
 			"--openpgp",
 			"--armor",
@@ -228,7 +228,7 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 			input.Logger.Error().Err(err).Msgf("failed to delete unencrypted temp tarball: %s", localTarball)
 			return err
 		}
-		input.Logger.Debug().Err(err).Msgf("deleted unencrypted temp tarball: %s", localTarball)
+		input.Logger.Debug().Msgf("deleted unencrypted temp tarball: %s", localTarball)
 
 	}
 

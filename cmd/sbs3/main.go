@@ -73,6 +73,19 @@ func run() (err error) {
 			return err
 		}
 	}
+	// finally runupload like:
+	///aws s3 cp  ~/.stayback/20220130-143927/ \
+	// s3://com.imprivata.371143864265.us-east-1.personal/stayback/20220130-143927 --recursive
+	jobDir := path.Join(job.BackupDirectory, job.Id)
+	s3Uri := fmt.Sprintf("s3://%s/stayback/%s/", job.S3Bucket, job.Id)
+	logger.Debug().Msgf("uploading files: %s -> %s", jobDir, s3Uri)
+	_, err = shell.RunAndWait("aws", []string{"s3", "cp", jobDir, s3Uri, "--recursive"})
+	if err != nil {
+		logger.Error().Err(err).Msgf("failed to upload files: %s -> %s", jobDir, s3Uri)
+		return err
+	}
+	logger.Debug().Msgf("uploadied files: %s -> %s", jobDir, s3Uri)
+
 	return err
 }
 
