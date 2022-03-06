@@ -9,14 +9,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/natemarks/awsgrips/s3"
-	"github.com/natemarks/stayback/shell"
-	"github.com/rs/zerolog"
 	"io/ioutil"
 	"os"
 	"path"
 	"sort"
 	"time"
+
+	"github.com/natemarks/awsgrips/s3"
+	"github.com/natemarks/stayback/shell"
+	"github.com/rs/zerolog"
 )
 
 func CurrentTime() string {
@@ -66,6 +67,32 @@ func (c *Job) TargetDirsExist(log *zerolog.Logger) (err error) {
 		log.Debug().Msgf("target exists: %s", v)
 	}
 	return err
+}
+
+// MakeRestoreDir Return an error if the directory already exists, otherwise create
+func (c Job) MakeRestoreDir() (err error) {
+	restoreDir := path.Join(c.BackupDirectory, c.Id)
+	_, err = os.Stat(restoreDir)
+	// Return error if restore directory exists
+	if err == nil {
+		msg := fmt.Sprintf("Restore directory already exists: %s", restoreDir)
+		return errors.New(msg)
+	}
+	os.Mkdir(restoreDir, os.ModeDir)
+	return err
+}
+
+// Restore Download backup data to local
+func (c Job) Restore() (err error) {
+	restoreDir := path.Join(c.BackupDirectory, c.Id)
+	_, err = shell.RunAndWait("aws", []string{"s3", "sync", c.S3Uri(), restoreDir})
+	return err
+}
+
+// Return the S3 Uri for the job
+func (c Job) S3Uri() (s3Uri string) {
+	s3path := fmt.Sprintf("stayback/%s/", c.Id)
+	return fmt.Sprintf("s3://%s/%s", c.S3Bucket, s3path)
 }
 
 // CreateS3JobPath creates the s3 destination path

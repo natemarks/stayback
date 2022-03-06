@@ -1,5 +1,6 @@
-// backup local targets to s3 in parallel
-// fail fast for missing local targets and for bad s3 access
+// restore job from S3 to stayback local working directory
+// given a job id (ex. 20220306-070110 )
+// see if that direcotry exists in the local stayback directory and fail
 package main
 
 // TODO: have working directories be per job id
@@ -7,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"time"
 
 	"github.com/natemarks/stayback/backup"
 	"github.com/natemarks/stayback/shell"
@@ -24,10 +24,13 @@ func run() (err error) {
 	}
 
 	// set the job id form the current time
-	t := time.Now()
-	job.Id = fmt.Sprintf("%d%02d%02d-%02d%02d%02d",
-		t.Year(), t.Month(), t.Day(),
-		t.Hour(), t.Minute(), t.Second())
+	job.Id = "20220306-070110"
+
+	// Setup the restore directory. Fatal if it already exists
+	err = job.MakeRestoreDir()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("")
+	}
 
 	// log error for all of the targets that don't exist
 	// if any targets didn't exist, log fatal

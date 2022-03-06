@@ -10,7 +10,7 @@ COMMIT := $(shell git rev-parse HEAD)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/)
 CDIR = $(shell pwd)
-EXECUTABLES := sbkp sbsecrets s3backup
+EXECUTABLES := sbkp sbsecrets s3backup s3restore
 GOOS := linux darwin
 GOARCH := amd64
 
