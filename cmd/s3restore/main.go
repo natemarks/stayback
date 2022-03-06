@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -12,6 +13,10 @@ import (
 	"github.com/rs/zerolog"
 )
 
+func JobIdFromKey(key string) (jobId string, err error) {
+	return "", err
+}
+
 func run() (err error) {
 	logger := zerolog.New(os.Stderr).With().Str("version", version.Version).Timestamp().Logger()
 	logger.Debug().Msgf("Starting")
@@ -19,7 +24,8 @@ func run() (err error) {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}
-
+	latestKey, err := job.LatestKeyFromS3()
+	fmt.Printf(latestKey)
 	// set the job id form the current time
 	job.Id = "20220306-070110"
 

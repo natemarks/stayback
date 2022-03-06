@@ -15,6 +15,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+
 	"github.com/natemarks/awsgrips/s3"
 	"github.com/natemarks/stayback/shell"
 	"github.com/rs/zerolog"
@@ -260,4 +262,20 @@ func TargetHandler(input TargetHandlerInput) (err error) {
 	}
 
 	return err
+}
+
+// LatestKeyFromS3 find the most recent S3 backup job
+func (c Job) LatestKeyFromS3() (key string, err error) {
+	var latestOject types.Object
+	results, err := s3.ListObjects(c.S3Bucket, "stayback/")
+	if err != nil {
+		return "", err
+	}
+	for _, c := range results {
+		if (latestOject.LastModified == nil) || (c.LastModified.Before(*latestOject.LastModified)) {
+			latestOject = c
+		}
+	}
+
+	return *latestOject.Key, err
 }
