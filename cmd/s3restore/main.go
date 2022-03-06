@@ -4,7 +4,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -31,7 +30,6 @@ func run() (err error) {
 		logger.Fatal().Err(err).Msg("")
 	}
 	latestKey, err := job.LatestKeyFromS3()
-	fmt.Printf(latestKey)
 	// set the job id form the current time
 	job.Id = KeyToJobId(latestKey)
 
