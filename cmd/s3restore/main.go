@@ -28,7 +28,7 @@ func run() (err error) {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}
-	
+
 	logger.Debug().Msgf("downloading: %s -> %s", job.S3Uri(), path.Join(job.BackupDirectory, job.Id))
 	job.Restore()
 	return err
