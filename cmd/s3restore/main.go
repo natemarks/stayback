@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/natemarks/stayback/backup"
 	"github.com/natemarks/stayback/version"
@@ -15,6 +16,11 @@ import (
 
 func JobIdFromKey(key string) (jobId string, err error) {
 	return "", err
+}
+
+func KeyToJobId(key string) string {
+	parts := strings.Split(key, "/")
+	return parts[1]
 }
 
 func run() (err error) {
@@ -27,7 +33,7 @@ func run() (err error) {
 	latestKey, err := job.LatestKeyFromS3()
 	fmt.Printf(latestKey)
 	// set the job id form the current time
-	job.Id = "20220306-070110"
+	job.Id = KeyToJobId(latestKey)
 
 	// Setup the restore directory. Fatal if it already exists
 	err = job.MakeRestoreDir()

@@ -271,9 +271,9 @@ func (c Job) LatestKeyFromS3() (key string, err error) {
 	if err != nil {
 		return "", err
 	}
-	for _, c := range results {
-		if (latestOject.LastModified == nil) || (c.LastModified.Before(*latestOject.LastModified)) {
-			latestOject = c
+	for _, cc := range results {
+		if (latestOject.LastModified == nil) || (cc.LastModified.After(*latestOject.LastModified)) {
+			latestOject = cc
 		}
 	}
 
