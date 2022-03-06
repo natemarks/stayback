@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# sbcompress.sh is a simple mockup of the general way sbs3 will compress files
+# sbcompress.sh is a simple mockup of the general way s3backup will compress files
 # It works but it's intent is to just help me think the process through
 
 # https://gist.github.com/natemarks/aebb7e84010d4bc37270d554106cb38b
