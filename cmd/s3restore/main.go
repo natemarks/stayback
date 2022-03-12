@@ -8,6 +8,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/natemarks/stayback/shell"
+
 	"github.com/natemarks/stayback/backup"
 	"github.com/natemarks/stayback/version"
 	"github.com/rs/zerolog"
@@ -25,7 +27,12 @@ func KeyToJobId(key string) string {
 func run() (err error) {
 	logger := zerolog.New(os.Stderr).With().Str("version", version.Version).Timestamp().Logger()
 	logger.Debug().Msgf("Starting")
-	job, err := backup.NewJobFromFile("/Users/nmarks/.stayback.json")
+
+	configFile, err := shell.DefaultConfigFilePath()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("")
+	}
+	job, err := backup.NewJobFromFile(configFile)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}

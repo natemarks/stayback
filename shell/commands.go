@@ -1,6 +1,10 @@
 package shell
 
-import "os/exec"
+import (
+	"os"
+	"os/exec"
+	"path"
+)
 
 type RunAndWaitOutput struct {
 	ExitCode       int
@@ -21,4 +25,14 @@ func MkdirP(dirPath string) (err error) {
 	args := []string{"-p", dirPath}
 	_, err = RunAndWait("mkdir", args)
 	return err
+}
+
+// DefaultConfigFilePath return the absolute path to the default config file
+// $HOME/.stayback.json
+func DefaultConfigFilePath() (configPath string, err error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return path.Join(home, ".stayback.json"), err
 }
