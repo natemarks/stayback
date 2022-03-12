@@ -80,7 +80,7 @@ func (c Job) MakeRestoreDir() (err error) {
 		msg := fmt.Sprintf("Restore directory already exists: %s", restoreDir)
 		return errors.New(msg)
 	}
-	err = os.Mkdir(restoreDir, 0755)
+	err = shell.MkdirP(restoreDir)
 	return err
 }
 
